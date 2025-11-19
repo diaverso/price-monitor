@@ -6,7 +6,10 @@
 
 <br/>
 
-[![Language: ES](https://img.shields.io/badge/Idioma-Español-blue)](#español) [![Language: EN](https://img.shields.io/badge/Language-English-green)](#english)
+[![Language: ES](https://img.shields.io/badge/Idioma-Español-blue)](#español)
+[![Language: EN](https://img.shields.io/badge/Language-English-green)](#english)
+[![Add Website](https://img.shields.io/badge/➕_Add_Website-Añadir_Sitio-orange)](https://github.com/diaverso/price-monitor/issues/new?labels=add-website&template=add-website.md)
+[![Report Bug](https://img.shields.io/badge/🐛_Report_Bug-Reportar_Error-red)](https://github.com/diaverso/price-monitor/issues/new?labels=bug&template=bug_report.md)
 
 </div>
 
