@@ -1,0 +1,22 @@
+// Wait for i18n to be ready
+function waitForI18n() {
+    return new Promise((resolve) => {
+        if (window.i18n && window.i18n.translations && Object.keys(window.i18n.translations).length > 0) {
+            resolve();
+        } else {
+            const checkInterval = setInterval(() => {
+                if (window.i18n && window.i18n.translations && Object.keys(window.i18n.translations).length > 0) {
+                    clearInterval(checkInterval);
+                    resolve();
+                }
+            }, 50);
+        }
+    });
+}
+
+// Verificar autenticación al cargar
+window.addEventListener('DOMContentLoaded', async () => {
+    await waitForI18n();
+    await checkAuth();
+    await loadURLs();
+});

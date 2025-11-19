@@ -1,0 +1,97 @@
+# ============================================
+# CONFIGURACIÓN CRONTAB - MONITOR DE PRECIOS
+# ============================================
+#
+# Este archivo contiene la configuración de crontab para el sistema
+# de monitoreo de precios. El sistema verifica precios 3 veces al día.
+#
+# HORARIOS (Zona horaria: Europe/Madrid - España):
+# - 09:00 - Verificación matutina
+# - 14:00 - Verificación del mediodía
+# - 00:00 - Verificación nocturna (medianoche)
+#
+# ============================================
+# INSTALACIÓN
+# ============================================
+#
+# 1. Verificar la zona horaria del servidor:
+#    timedatectl
+#
+# 2. Si es necesario, cambiar a horario español:
+#    sudo timedatectl set-timezone Europe/Madrid
+#
+# 3. Editar el crontab:
+#    crontab -e
+#
+# 4. Copiar las siguientes líneas en tu crontab:
+#
+# ============================================
+
+# Verificación de precios a las 09:00 (mañana)
+0 9 * * * /usr/bin/php /var/www/html/price-monitor/cron/check-prices.php >> /var/www/html/price-monitor/cron/logs/cron.log 2>&1
+
+# Verificación de precios a las 14:00 (mediodía)
+0 14 * * * /usr/bin/php /var/www/html/price-monitor/cron/check-prices.php >> /var/www/html/price-monitor/cron/logs/cron.log 2>&1
+
+# Verificación de precios a las 00:00 (medianoche)
+0 0 * * * /usr/bin/php /var/www/html/price-monitor/cron/check-prices.php >> /var/www/html/price-monitor/cron/logs/cron.log 2>&1
+
+# ============================================
+# EXPLICACIÓN DE LA SINTAXIS CRON
+# ============================================
+#
+# * * * * * comando
+# │ │ │ │ │
+# │ │ │ │ └─── Día de la semana (0-7, donde 0 y 7 = Domingo)
+# │ │ │ └───── Mes (1-12)
+# │ │ └─────── Día del mes (1-31)
+# │ └───────── Hora (0-23)
+# └─────────── Minuto (0-59)
+#
+# Ejemplos:
+# 0 9 * * *    = Cada día a las 09:00
+# 0 14 * * *   = Cada día a las 14:00
+# 0 0 * * *    = Cada día a las 00:00 (medianoche)
+# */30 * * * * = Cada 30 minutos
+# 0 */2 * * *  = Cada 2 horas
+#
+# ============================================
+# LOGS
+# ============================================
+#
+# Los logs se guardan en:
+# /var/www/html/price-monitor/cron/logs/cron.log
+#
+# Para ver los últimos logs:
+# tail -f /var/www/html/price-monitor/cron/logs/cron.log
+#
+# Para ver logs del sistema:
+# grep CRON /var/log/syslog
+#
+# ============================================
+# VERIFICACIÓN
+# ============================================
+#
+# Para verificar que el crontab está activo:
+# crontab -l
+#
+# Para verificar que el script funciona manualmente:
+# php /var/www/html/price-monitor/cron/check-prices.php
+#
+# ============================================
+# NOTAS IMPORTANTES
+# ============================================
+#
+# 1. Asegúrate de que la ruta de PHP sea correcta:
+#    which php
+#
+# 2. Asegúrate de que el script tenga permisos de ejecución:
+#    chmod +x /var/www/html/price-monitor/cron/check-prices.php
+#
+# 3. El directorio de logs debe existir:
+#    mkdir -p /var/www/html/price-monitor/cron/logs
+#
+# 4. Asegúrate de que el usuario de cron tenga permisos:
+#    chown -R www-data:www-data /var/www/html/price-monitor
+#
+# ============================================

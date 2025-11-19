@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor de Precios - Inicio</title>
+    <meta name="i18n-title" content="index.title">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar {
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .navbar-right {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        
+
+        .logo {
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .btn-nav {
+            background: white;
+            color: #667eea;
+            padding: 10px 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-nav:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .hero {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 60px 20px;
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 56px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .hero p {
+            font-size: 20px;
+            margin-bottom: 40px;
+            max-width: 600px;
+            opacity: 0.95;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #667eea;
+            padding: 15px 40px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 18px;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .features-title {
+            font-size: 32px;
+            margin-top: 40px;
+            margin-bottom: 30px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin-top: 20px;
+        }
+
+        .feature {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .feature h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .feature p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .stores-section {
+            max-width: 1200px;
+            margin-top: 60px;
+            width: 100%;
+            padding: 0 20px;
+        }
+
+        .stores-title {
+            font-size: 32px;
+            margin-bottom: 30px;
+        }
+
+        .stores-slider-container {
+            position: relative;
+            width: 100%;
+            padding: 20px 70px;
+        }
+
+        .stores-slider {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            padding: 20px 10px;
+            scrollbar-width: none;
+        }
+
+        .stores-slider::-webkit-scrollbar {
+            display: none;
+        }
+
+        .store-card {
+            flex: 0 0 200px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .store-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .store-logo {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            border-radius: 10px;
+            background: white;
+            padding: 15px;
+            display: block;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .store-name {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .slider-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.4);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 80px;
+            border-radius: 10px;
+            font-size: 28px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .slider-nav:hover {
+            background: rgba(255, 255, 255, 0.6);
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        .slider-nav-left {
+            left: 0;
+            z-index: 10;
+        }
+
+        .slider-nav-right {
+            right: 0;
+            z-index: 10;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 36px;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+
+            .stores-section {
+                padding: 0 20px;
+            }
+
+            .slider-nav {
+                display: none;
+            }
+
+            .store-card {
+                flex: 0 0 150px;
+            }
+
+            .store-logo {
+                width: 80px;
+                height: 80px;
+            }
+        }
+    </style>
+    <script src="js/i18n.js"></script>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo" data-i18n="common.appName">Monitor de Precios</div>
+        <div class="navbar-right">
+            <div id="language-selector"></div>
+            <div id="issues-selector"></div>
+            <a href="login.html" class="btn-nav" data-i18n="common.login">Iniciar Sesión</a>
+        </div>
+    </div>
+
+    <div class="hero">
+        <h1 data-i18n="index.heroTitle">Monitoriza Precios Automáticamente</h1>
+        <p data-i18n="index.heroSubtitle">Controla los precios de tus productos favoritos y recibe alertas cuando bajen de precio</p>
+
+        <div class="cta-buttons">
+            <a href="login.html" class="btn-primary" data-i18n="index.startFree">Comenzar Gratis</a>
+        </div>
+
+        <h2 class="features-title">Características</h2>
+        <div class="features" id="features">
+            <div class="feature">
+                <div class="feature-icon">🔍</div>
+                <h3 data-i18n="index.feature1Title">Monitoreo Automático</h3>
+                <p data-i18n="index.feature1Desc">Verificamos los precios automáticamente 3 veces al día</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">🔔</div>
+                <h3 data-i18n="index.feature2Title">Notificaciones Múltiples</h3>
+                <p data-i18n="index.feature2Desc">Recibe notificaciones por Email, Telegram, WhatsApp o SMS</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">💰</div>
+                <h3 data-i18n="index.feature3Title">Compra Inteligente</h3>
+                <p data-i18n="index.feature3Desc">Compra cuando el precio llegue a tu objetivo</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">📊</div>
+                <h3 data-i18n="index.feature4Title">Historial de Precios</h3>
+                <p data-i18n="index.feature4Desc">Visualiza cómo han cambiado los precios con el tiempo</p>
+            </div>
+        </div>
+
+        <div class="stores-section">
+            <h2 class="stores-title" data-i18n="index.supportedStores">Tiendas Soportadas</h2>
+            <div class="stores-slider-container">
+                <button class="slider-nav slider-nav-left" onclick="slideStores(-1)">‹</button>
+                <div class="stores-slider" id="storesSlider">
+                    <a href="https://www.pccomponentes.com/" target="_blank" class="store-card">
+                        <img src="https://images.seeklogo.com/logo-png/41/2/pc-componentes-logo-png_seeklogo-412332.png" alt="PcComponentes" class="store-logo">
+                        <div class="store-name">PcComponentes</div>
+                    </a>
+
+                    <a href="https://www.mediamarkt.es" target="_blank" class="store-card">
+                        <img src="https://cdn.worldvectorlogo.com/logos/media-markt-1.svg" alt="MediaMarkt" class="store-logo">
+                        <div class="store-name">MediaMarkt</div>
+                    </a>
+
+                    <a href="https://www.amazon.es/" target="_blank" class="store-card">
+                        <img src="https://brandemia.org/contenido/subidas/2022/11/logo-amazon-2000-actualidad-1024x576.png" alt="Amazon" class="store-logo">
+                        <div class="store-name">Amazon</div>
+                    </a>
+
+                    <a href="https://www.elcorteingles.es/" target="_blank" class="store-card">
+                        <img src="https://images.seeklogo.com/logo-png/36/1/el-corte-ingles-logo-png_seeklogo-365743.png" alt="El Corte Inglés" class="store-logo">
+                        <div class="store-name">El Corte Inglés</div>
+                    </a>
+
+                    <a href="https://www.coolmod.com/" target="_blank" class="store-card">
+                        <img src="https://www.coolmod.com/images/logos/logo_coolmod.png" alt="Coolmod" class="store-logo">
+                        <div class="store-name">Coolmod</div>
+                    </a>
+
+                    <a href="https://www.mercadona.es/" target="_blank" class="store-card">
+                        <img src="https://i.pinimg.com/736x/66/bc/4e/66bc4e8d1482e6ec4525987c1691c83e.jpg" alt="Mercadona" class="store-logo">
+                        <div class="store-name">Mercadona</div>
+                    </a>
+
+                    <a href="https://tienda.consum.es/es" target="_blank" class="store-card">
+                        <img src="https://cdn-consum.aktiosdigitalservices.com/assets/application/es/logo.png" alt="Consum" class="store-logo">
+                        <div class="store-name">Consum</div>
+                    </a>
+
+                    <a href="https://es.aliexpress.com/" target="_blank" class="store-card">
+                        <img src="https://ae01.alicdn.com/kf/Sa0202ec8a96a4085962acfc27e9ffd04F/1080x1080.jpg" alt="AliExpress" class="store-logo">
+                        <div class="store-name">AliExpress</div>
+                    </a>
+
+                    <a href="https://www.zara.com" target="_blank" class="store-card">
+                        <img src="https://brandemia.org/sites/default/files/inline/images/zara_nuevo_logo.jpg" alt="Zara" class="store-logo">
+                        <div class="store-name">Zara</div>
+                    </a>
+
+                    <a href="https://www.zalando.es" target="_blank" class="store-card">
+                        <img src="https://images.seeklogo.com/logo-png/50/1/zalando-logo-png_seeklogo-504391.png" alt="Zalando" class="store-logo">
+                        <div class="store-name">Zalando</div>
+                    </a>
+
+                    <a href="https://www.lego.com" target="_blank" class="store-card">
+                        <img src="https://assets.lego.com/logos/v4.5.0/brand-lego.svg" alt="Lego" class="store-logo">
+                        <div class="store-name">Lego</div>
+                    </a>
+
+                    <a href="https://www.mangooutlet.com" target="_blank" class="store-card">
+                        <img src="https://www.theoutletstoresalicante.es/wp-content/uploads/2014/05/mango-outlet.jpg" alt="Mango Outlet" class="store-logo">
+                        <div class="store-name">Mango Outlet</div>
+                    </a>
+
+                    <a href="https://www.michaelkors.es" target="_blank" class="store-card">
+                        <img src="https://planetexpress.com/wp-content/uploads/2019/01/Planet-Express-Michael-Kors-logo.png" alt="Michael Kors" class="store-logo">
+                        <div class="store-name">Michael Kors</div>
+                    </a>
+
+                    <a href="https://shop.mango.com" target="_blank" class="store-card">
+                        <img src="https://i.pinimg.com/736x/43/cf/6c/43cf6cdccd5cf28ab3d4d930846f6bd2.jpg" alt="Mango" class="store-logo">
+                        <div class="store-name">Mango</div>
+                    </a>
+
+                    <a href="https://www.ikea.com" target="_blank" class="store-card">
+                        <img src="https://www.ikea.com/global/assets/logos/brand/ikea.svg" alt="Ikea" class="store-logo">
+                        <div class="store-name">Ikea</div>
+                    </a>
+                </div>
+                <button class="slider-nav slider-nav-right" onclick="slideStores(1)">›</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function slideStores(direction) {
+            const slider = document.getElementById('storesSlider');
+            const cardWidth = 230;
+            slider.scrollBy({
+                left: direction * cardWidth * 2,
+                behavior: 'smooth'
+            });
+        }
+    </script>
+</body>
+</html>

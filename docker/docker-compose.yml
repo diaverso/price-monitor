@@ -1,0 +1,171 @@
+version: '3.8'
+
+# ============================================
+# Monitor de Precios - Docker Compose
+# Red aislada y segura
+# ============================================
+
+services:
+  # ============================================
+  # Servicio MySQL
+  # ============================================
+  mysql:
+    image: mariadb:10.11
+    container_name: price-monitor-mysql
+    restart: unless-stopped
+
+    # Red aislada interna
+    networks:
+      - price-monitor-network
+
+    # Variables de entorno
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change_this_password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-price_monitor}
+      MYSQL_USER: ${MYSQL_USER:-price_monitor_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-change_this_password}
+      TZ: Europe/Madrid
+
+    # Volumen persistente para datos
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./init-db:/docker-entrypoint-initdb.d:ro
+
+    # Configuración de seguridad
+    security_opt:
+      - no-new-privileges:true
+
+    # Límites de recursos
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+    # Healthcheck
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    # NO exponer puerto externamente (solo red interna)
+    # ports:
+    #   - "3306:3306"  # DESHABILITADO por seguridad
+
+  # ============================================
+  # Servicio Aplicación Web
+  # ============================================
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+
+    image: price-monitor:latest
+    container_name: price-monitor-web
+    restart: unless-stopped
+
+    # Depende de MySQL
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+    # Red aislada interna
+    networks:
+      - price-monitor-network
+
+    # Puerto expuesto (SOLO este servicio se expone al host)
+    ports:
+      - "${WEB_PORT:-8080}:80"
+
+    # Variables de entorno
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-price_monitor}
+      MYSQL_USER: ${MYSQL_USER:-price_monitor_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-change_this_password}
+      AUTO_INIT_DB: ${AUTO_INIT_DB:-true}
+      TZ: Europe/Madrid
+
+    # Volúmenes
+    volumes:
+      # Logs persistentes
+      - logs-data:/var/www/html/price-monitor/logs
+      # NO montar código fuente (ya está en la imagen)
+
+    # Configuración de seguridad
+    security_opt:
+      - no-new-privileges:true
+
+    # Límites de recursos
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1G
+        reservations:
+          cpus: '1.0'
+          memory: 512M
+
+    # Healthcheck
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+    # Capabilities limitadas (seguridad)
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+
+# ============================================
+# Redes
+# ============================================
+networks:
+  price-monitor-network:
+    driver: bridge
+    internal: false  # Permitir acceso a internet para scraping
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.25.0.0/24
+          gateway: 172.25.0.1
+
+    # Configuración de aislamiento
+    driver_opts:
+      com.docker.network.bridge.name: br-price-monitor
+      com.docker.network.bridge.enable_icc: "true"
+      com.docker.network.bridge.enable_ip_masquerade: "true"
+      com.docker.network.driver.mtu: "1500"
+
+    # Labels para identificación
+    labels:
+      project: "price-monitor"
+      environment: "production"
+
+# ============================================
+# Volúmenes
+# ============================================
+volumes:
+  mysql-data:
+    driver: local
+    labels:
+      project: "price-monitor"
+      type: "database"
+
+  logs-data:
+    driver: local
+    labels:
+      project: "price-monitor"
+      type: "logs"
