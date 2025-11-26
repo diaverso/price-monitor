@@ -1,0 +1,78 @@
+version: '3.8'
+
+# ============================================
+# Monitor de Precios - Docker Compose
+# Imagen todo-en-uno con MySQL incluido
+# ============================================
+
+services:
+  # ============================================
+  # Servicio Único: Web + MySQL
+  # ============================================
+  web:
+    image: diaverso/price-monitor:latest
+    container_name: price-monitor
+    restart: unless-stopped
+
+    # Puerto expuesto
+    ports:
+      - "${WEB_PORT:-8080}:80"
+
+    # Variables de entorno
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-price_monitor}
+      MYSQL_USER: ${MYSQL_USER:-price_monitor_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-change_this_password}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password}
+      TZ: Europe/Madrid
+
+    # Volúmenes persistentes
+    volumes:
+      # Datos de MySQL
+      - mysql-data:/var/lib/mysql
+      # Logs de la aplicación
+      - logs-data:/var/www/html/price-monitor/logs
+
+    # Configuración de seguridad
+    security_opt:
+      - no-new-privileges:true
+
+    # Límites de recursos
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+
+    # Healthcheck
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+    # Labels para identificación
+    labels:
+      project: "price-monitor"
+      environment: "production"
+      description: "Sistema de monitoreo automático de precios"
+
+# ============================================
+# Volúmenes
+# ============================================
+volumes:
+  mysql-data:
+    driver: local
+    labels:
+      project: "price-monitor"
+      type: "database"
+
+  logs-data:
+    driver: local
+    labels:
+      project: "price-monitor"
+      type: "logs"

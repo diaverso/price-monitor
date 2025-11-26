@@ -1,0 +1,109 @@
+# ============================================
+# Docker Ignore - Archivos a excluir de la imagen
+# ============================================
+
+# Git (No necesario en imagen)
+.git/
+.github/
+.gitignore
+.gitattributes
+.gitmodules
+
+# Docker (No copiar archivos de Docker al contenedor)
+docker/
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+*.dockerfile
+
+# Documentación (Reduce tamaño de imagen)
+*.md
+!README.md
+docs/
+documentation/
+
+# Logs y datos temporales (Se crean en runtime)
+logs/
+*.log
+*.tmp
+*.temp
+.cache/
+tmp/
+
+# Node modules (Se instalan durante el build)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Archivos de configuración local (Sensibles)
+.env*
+!.env.example
+config/database.php
+config/*.local.php
+*.local
+
+# Backups y SQL (No necesarios en imagen base)
+database/*.sql
+!database/schema.sql
+*.sql.gz
+backup*/
+backups/
+*.bak
+*.backup
+dumps/
+
+# IDE y editores (No necesarios)
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-*
+.project
+.settings/
+
+# Archivos de sistema
+Thumbs.db
+desktop.ini
+.Spotlight-V100
+.Trashes
+
+# Archivos de test (No necesarios en producción)
+test/
+tests/
+__tests__/
+*.test.js
+*.spec.js
+coverage/
+.nyc_output/
+
+# Archivos compilados (Se pueden regenerar)
+*.min.js.map
+*.min.css.map
+
+# Archivos de desarrollo
+.editorconfig
+.eslintrc*
+.prettierrc*
+.stylelintrc*
+.travis.yml
+.gitlab-ci.yml
+.circleci/
+webpack.config.js
+rollup.config.js
+
+# Scripts de instalación (No necesarios en imagen)
+install-docker.sh
+build-image.sh
+DOCKER_HUB.md
+
+# Otros archivos innecesarios
+*.orig
+*.rej
+.sass-cache/
+.bundle/
+vendor/bundle/

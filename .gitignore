@@ -1,0 +1,29 @@
+# Archivos de configuración sensibles
+config/database.php
+
+# Node modules
+node_modules/
+package-lock.json
+
+# Logs
+logs/*.log
+*.log
+
+# Archivos temporales
+.DS_Store
+Thumbs.db
+*~
+*.swp
+*.swo
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# Docker
+.env
+
+# Archivos de sistema
+.git/
+Github/

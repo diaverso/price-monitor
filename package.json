@@ -1,0 +1,30 @@
+{
+  "name": "price-monitor",
+  "version": "2.1.0",
+  "description": "Sistema completo de monitoreo automático de precios",
+  "main": "scrapers/hero_scraper.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "price",
+    "monitor",
+    "scraping",
+    "ulixee",
+    "hero"
+  ],
+  "author": "Price Monitor Team",
+  "license": "MIT",
+  "dependencies": {
+    "@ulixee/hero-playground": "^2.0.0-alpha.34",
+    "@ulixee/chrome-139-0": "^7258.154.11"
+  },
+  "overrides": {
+    "cross-spawn": "^7.0.6",
+    "glob": "^11.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
