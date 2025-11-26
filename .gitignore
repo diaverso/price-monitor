@@ -5,6 +5,10 @@ config/database.php
 node_modules/
 package-lock.json
 
+# Composer dependencies
+vendor/
+composer.lock
+
 # Logs
 logs/*.log
 *.log
