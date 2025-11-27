@@ -135,6 +135,7 @@ function displayURLs(urls) {
             <div class="card-actions">
                 <button class="btn btn-edit" onclick="viewHistory(${url.id})" style="background: #4CAF50;" data-i18n-text="dashboard.history" data-emoji="📊">📊 Ver Historial</button>
                 <button class="btn btn-edit" onclick="runScraping(${url.id})" style="background: #2196F3;" data-i18n-text="dashboard.updateData" data-emoji="🔄">🔄 Actualizar Datos</button>
+                <button class="btn btn-edit" onclick="crossSiteSearch.showSearchModal(${url.id}, '${(url.product_name || '').replace(/'/g, "\\'")}')" style="background: #FF9800;" data-i18n-text="dashboard.searchOtherStores" data-emoji="🔍">🔍 Buscar en otras tiendas</button>
                 <button class="btn btn-edit" onclick="editURL(${url.id})" data-i18n="common.edit">Editar</button>
                 <button class="btn btn-delete" onclick="deleteURL(${url.id})" data-i18n="common.delete">Eliminar</button>
             </div>
