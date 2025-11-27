@@ -129,7 +129,8 @@
       "attention": "Atención",
       "selectNotificationMethod": "Debes seleccionar al menos un método de notificación",
       "added": "Agregado",
-      "urlNotFound": "URL no encontrada"
+      "urlNotFound": "URL no encontrada",
+      "searchOtherStores": "Buscar en otras tiendas"
     },
     "priceChart": {
       "title": "Historial de Precios",
@@ -282,7 +283,8 @@
       "attention": "Attention",
       "selectNotificationMethod": "You must select at least one notification method",
       "added": "Added",
-      "urlNotFound": "URL not found"
+      "urlNotFound": "URL not found",
+      "searchOtherStores": "Search in other stores"
     },
     "priceChart": {
       "title": "Price History",
