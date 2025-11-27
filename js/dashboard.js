@@ -66,6 +66,15 @@ async function loadURLs() {
     }
 }
 
+// Helper para escapar HTML en atributos
+function escapeHtml(text) {
+    return text.replace(/&/g, '&amp;')
+               .replace(/</g, '&lt;')
+               .replace(/>/g, '&gt;')
+               .replace(/"/g, '&quot;')
+               .replace(/'/g, '&#039;');
+}
+
 // Mostrar URLs en el dashboard
 function displayURLs(urls) {
     const container = document.getElementById('urlsList');
@@ -135,7 +144,7 @@ function displayURLs(urls) {
             <div class="card-actions">
                 <button class="btn btn-edit" onclick="viewHistory(${url.id})" style="background: #4CAF50;" data-i18n-text="dashboard.history" data-emoji="📊">📊 Ver Historial</button>
                 <button class="btn btn-edit" onclick="runScraping(${url.id})" style="background: #2196F3;" data-i18n-text="dashboard.updateData" data-emoji="🔄">🔄 Actualizar Datos</button>
-                <button class="btn btn-edit" onclick="crossSiteSearch.showSearchModal(${url.id}, '${(url.product_name || '').replace(/'/g, "\\'")}')" style="background: #FF9800;" data-i18n-text="dashboard.searchOtherStores" data-emoji="🔍">🔍 Buscar en otras tiendas</button>
+                <button class="btn btn-edit" onclick="searchInOtherStores(this)" data-url-id="${url.id}" data-product-name="${escapeHtml(url.product_name || '')}" style="background: #FF9800;" data-i18n-text="dashboard.searchOtherStores" data-emoji="🔍">🔍 Buscar en otras tiendas</button>
                 <button class="btn btn-edit" onclick="editURL(${url.id})" data-i18n="common.edit">Editar</button>
                 <button class="btn btn-delete" onclick="deleteURL(${url.id})" data-i18n="common.delete">Eliminar</button>
             </div>
@@ -453,5 +462,18 @@ function reapplyTranslations() {
         setTimeout(() => {
             i18n.applyTranslations();
         }, 50);
+    }
+}
+
+// Buscar producto en otras tiendas
+function searchInOtherStores(button) {
+    const urlId = button.getAttribute('data-url-id');
+    const productName = button.getAttribute('data-product-name');
+
+    if (typeof crossSiteSearch !== 'undefined') {
+        crossSiteSearch.showSearchModal(urlId, productName);
+    } else {
+        console.error('crossSiteSearch no está cargado');
+        showToast('Error', 'El módulo de búsqueda cross-site no está disponible', 'error');
     }
 }
