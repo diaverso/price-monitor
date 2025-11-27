@@ -159,7 +159,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 $action = $_GET['action'] ?? '';
 
 try {
-    $db = getDBConnection();
+    $db = Database::getInstance()->getConnection();
 
     // GET: Obtener comparación de precios de un grupo
     if ($method === 'GET' && $action === 'comparison') {
