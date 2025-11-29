@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wsl bash:*)",
+      "Bash(wsl docker build:*)",
+      "Bash(wsl docker rm:*)",
+      "Bash(wsl docker ps:*)",
+      "Bash(wsl docker exec price-monitor bash -c \"ps aux | grep -E ''(mysql|apache|cron)'' | grep -v grep\")",
+      "Bash(wsl docker cp:*)",
+      "Bash(wsl docker exec:*)",
+      "Bash(wsl docker restart:*)",
+      "Bash(wsl docker logs:*)",
+      "Bash(wsl docker volume rm:*)",
+      "Bash(wsl cp:*)",
+      "Bash(wsl ls:*)",
+      "Bash(wsl find:*)",
+      "Bash(wsl grep:*)",
+      "Bash(wsl sh:*)",
+      "Bash(docker exec:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

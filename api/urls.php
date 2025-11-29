@@ -3,7 +3,26 @@ session_start();
 header('Content-Type: application/json');
 require_once '../config/database.php';
 require_once '../services/PcComponentesScraper.php';
+require_once '../services/AmazonScraper.php';
+require_once '../services/ElCorteInglesScraper.php';
+require_once '../services/CoolmodScraper.php';
+require_once '../services/MediaMarktScraper.php';
+require_once '../services/MercadonaScraper.php';
+require_once '../services/AliExpressScraper.php';
+require_once '../services/ConsumScraper.php';
+require_once '../services/ZaraScraper.php';
+require_once '../services/ZalandoScraper.php';
+require_once '../services/TemuScraper.php';
+require_once '../services/LegoScraper.php';
+require_once '../services/DecathlonScraper.php';
+require_once '../services/MangoOutletScraper.php';
+require_once '../services/MichaelKorsScraper.php';
+require_once '../services/MangoScraper.php';
+require_once '../services/IkeaScraper.php';
+require_once '../services/SeleniumScraper.php';
+require_once '../services/HeroScraper.php';
 require_once '../services/PriceScraper.php';
+require_once '../services/ScraperService.php';
 
 // Verificar autenticación
 if (!isset($_SESSION['user_id'])) {
@@ -95,7 +114,25 @@ if ($method === 'POST') {
         ");
         $stmt->execute([$userId, $url, $productName, $targetPrice]);
         $urlId = $db->lastInsertId();
-// Hacer scraping automático si es PcComponentes        if (PcComponentesScraper::isPcComponentesURL()) {             = new PcComponentesScraper(, );            ->extractProductInfo();        }
+
+        // Hacer scraping automático inmediatamente para extraer información del producto
+        error_log("[URLs API] Iniciando scraping automático para URL ID: $urlId");
+
+        try {
+            // Usar ScraperService para obtener la información con el scraper apropiado
+            $result = ScraperService::scrapeProductInfo($url, $urlId);
+
+            if ($result && $result['success']) {
+                error_log("[URLs API] Scraping exitoso para URL ID: $urlId");
+                // El scraper específico ya actualiza la base de datos automáticamente
+                // No necesitamos hacer más actualizaciones aquí
+            } else {
+                error_log("[URLs API] Scraping falló para URL ID: $urlId - " . ($result['error'] ?? 'Error desconocido'));
+            }
+        } catch (Exception $e) {
+            // No fallar la inserción si el scraping falla, solo loguear
+            error_log("[URLs API] Error en scraping automático para URL ID: $urlId - " . $e->getMessage());
+        }
 
         // Insertar métodos de notificación
         $stmt = $db->prepare("

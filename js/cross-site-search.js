@@ -94,9 +94,20 @@ class CrossSiteSearch {
     showSearchModal(urlId, productName) {
         const modalHtml = `
             <div id="crossSiteModal" class="modal" style="display: block;">
-                <div class="modal-content" style="max-width: 900px;">
-                    <span class="close" onclick="document.getElementById('crossSiteModal').remove()">&times;</span>
-                    <h2>🔍 Buscar en otras tiendas</h2>
+                <div class="modal-content" style="max-width: 900px; position: relative;">
+                    <span class="close" onclick="crossSiteSearch.closeSearchModal()" style="
+                        position: absolute;
+                        top: 15px;
+                        right: 20px;
+                        font-size: 32px;
+                        font-weight: bold;
+                        color: #999;
+                        cursor: pointer;
+                        transition: color 0.2s;
+                        line-height: 1;
+                        z-index: 1000;
+                    " onmouseover="this.style.color='#333'" onmouseout="this.style.color='#999'">&times;</span>
+                    <h2 style="padding-right: 40px;">🔍 Buscar en otras tiendas</h2>
                     <p><strong>Producto:</strong> ${productName}</p>
 
                     <div id="searchResults" style="margin-top: 20px;">
@@ -117,8 +128,48 @@ class CrossSiteSearch {
         // Añadir modal al DOM
         document.body.insertAdjacentHTML('beforeend', modalHtml);
 
+        // Añadir clase al main-layout para mostrar sidebar
+        const mainLayout = document.querySelector('.main-layout');
+        if (mainLayout) {
+            mainLayout.classList.add('modal-open');
+        }
+
         // Iniciar búsqueda
         this.performSearch(urlId);
+    }
+
+    /**
+     * Cerrar modal de búsqueda y restaurar layout
+     */
+    closeSearchModal() {
+        // Remover modal
+        const modal = document.getElementById('crossSiteModal');
+        if (modal) {
+            modal.remove();
+        }
+
+        // Quitar clase del main-layout para ocultar sidebar
+        const mainLayout = document.querySelector('.main-layout');
+        if (mainLayout) {
+            mainLayout.classList.remove('modal-open');
+        }
+    }
+
+    /**
+     * Cerrar modal de comparación y restaurar layout
+     */
+    closeComparisonModal() {
+        // Remover modal
+        const modal = document.getElementById('comparisonModal');
+        if (modal) {
+            modal.remove();
+        }
+
+        // Quitar clase del main-layout para ocultar sidebar
+        const mainLayout = document.querySelector('.main-layout');
+        if (mainLayout) {
+            mainLayout.classList.remove('modal-open');
+        }
     }
 
     /**
@@ -138,10 +189,23 @@ class CrossSiteSearch {
                         <p><strong>Términos de búsqueda:</strong> ${data.product_info.search_terms.join(', ')}</p>
                     </div>
 
+                    <div style="background: #d4edda; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 2px solid #28a745;">
+                        <h3 style="margin-top: 0; color: #155724;">🤖 Búsqueda Automática (NUEVO)</h3>
+                        <p style="color: #155724; margin-bottom: 15px;">
+                            Usa nuestro sistema de scraping automático para encontrar el mismo producto en otras tiendas.
+                            El sistema buscará automáticamente y comparará productos por ti.
+                        </p>
+                        <button onclick="crossSiteSearch.performAutoSearch(${urlId})"
+                            id="autoSearchBtn"
+                            style="padding: 12px 30px; background: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                            ⚡ Iniciar Búsqueda Automática
+                        </button>
+                    </div>
+
                     <div class="store-links">
-                        <h3>🏪 Tiendas donde buscar (${data.search_urls.length})</h3>
+                        <h3>🏪 Búsqueda Manual (${data.search_urls.length} tiendas)</h3>
                         <p style="color: #666; margin-bottom: 15px;">
-                            Haz clic en las tiendas para buscar el producto. Cuando encuentres una URL similar, cópiala y añádela abajo.
+                            O haz clic en las tiendas para buscar manualmente. Cuando encuentres una URL similar, cópiala y añádela abajo.
                         </p>
 
                         <div class="store-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; margin-bottom: 20px;">
@@ -196,6 +260,230 @@ class CrossSiteSearch {
                 </div>
             `;
         }
+    }
+
+    /**
+     * Realizar búsqueda automática con scraping (NUEVO - Fase 2)
+     */
+    async performAutoSearch(urlId) {
+        const resultsContainer = document.getElementById('searchResults');
+        const autoSearchBtn = document.getElementById('autoSearchBtn');
+
+        // Deshabilitar botón y mostrar loading
+        if (autoSearchBtn) {
+            autoSearchBtn.disabled = true;
+            autoSearchBtn.innerHTML = '⏳ Buscando...';
+        }
+
+        const loadingHtml = `
+            <div class="auto-search-progress" style="background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h3 style="color: #007bff;">🔄 Búsqueda Automática en Progreso</h3>
+                <div style="margin: 20px 0;">
+                    <div class="progress-bar" style="width: 100%; background: #e9ecef; height: 30px; border-radius: 15px; overflow: hidden;">
+                        <div class="progress-fill" style="width: 0%; height: 100%; background: linear-gradient(90deg, #007bff, #28a745); transition: width 0.3s;"></div>
+                    </div>
+                </div>
+                <p id="progressText" style="color: #666; text-align: center;">Iniciando búsqueda automática...</p>
+                <p style="color: #999; font-size: 12px; text-align: center;">Esto puede tardar de 6 a 8 segundos</p>
+            </div>
+        `;
+
+        resultsContainer.insertAdjacentHTML('afterbegin', loadingHtml);
+
+        // Animación de progreso
+        const progressFill = document.querySelector('.progress-fill');
+        const progressText = document.getElementById('progressText');
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            progress += 2;
+            if (progress <= 90) {
+                progressFill.style.width = progress + '%';
+            }
+        }, 150);
+
+        const messages = [
+            'Analizando producto original...',
+            'Buscando en Amazon...',
+            'Buscando en PcComponentes...',
+            'Buscando en MediaMarkt...',
+            'Buscando en El Corte Inglés...',
+            'Comparando productos encontrados...',
+            'Calculando scores de similitud...'
+        ];
+        let msgIndex = 0;
+        const msgInterval = setInterval(() => {
+            if (msgIndex < messages.length) {
+                progressText.textContent = messages[msgIndex];
+                msgIndex++;
+            }
+        }, 1200);
+
+        try {
+            const response = await fetch(`${this.apiUrl}?action=auto-search`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    url_id: urlId,
+                    auto_add_to_group: true
+                })
+            });
+
+            const data = await response.json();
+
+            clearInterval(progressInterval);
+            clearInterval(msgInterval);
+
+            if (!data.success) {
+                throw new Error(data.error || 'Error en la búsqueda automática');
+            }
+
+            // Completar progreso
+            progressFill.style.width = '100%';
+            progressText.textContent = '✅ Búsqueda completada!';
+
+            setTimeout(() => {
+                this.showAutoSearchResults(data);
+            }, 500);
+
+        } catch (error) {
+            clearInterval(progressInterval);
+            clearInterval(msgInterval);
+
+            resultsContainer.innerHTML = `
+                <div class="error" style="background: #f8d7da; padding: 20px; border-radius: 8px; color: #721c24;">
+                    <h3>❌ Error en Búsqueda Automática</h3>
+                    <p>${error.message}</p>
+                    <button onclick="crossSiteSearch.showSearchModal(${urlId}, '')"
+                        style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px;">
+                        🔄 Reintentar
+                    </button>
+                </div>
+            `;
+        }
+    }
+
+    /**
+     * Mostrar resultados de búsqueda automática
+     */
+    showAutoSearchResults(data) {
+        const matches = data.matches || [];
+        const original = data.original_product || {};
+        const groupId = data.group_id;
+
+        const resultsHtml = `
+            <div class="auto-search-results">
+                <div class="success-banner" style="background: #d4edda; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #28a745;">
+                    <h3 style="color: #155724; margin: 0;">✅ Búsqueda Automática Completada</h3>
+                    <p style="color: #155724; margin: 10px 0 0 0;">
+                        Se encontraron <strong>${matches.length} productos similares</strong> en ${data.stores_searched ? data.stores_searched.length : 0} tiendas.
+                        Tiempo de ejecución: <strong>${data.execution_time_ms}ms</strong>
+                    </p>
+                </div>
+
+                <div class="original-product" style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <h3 style="margin-top: 0;">📦 Producto Original</h3>
+                    <p><strong>Nombre:</strong> ${original.name}</p>
+                    <p><strong>Precio:</strong> ${original.price}€</p>
+                    <p><strong>Tienda:</strong> ${original.store}</p>
+                    <p><strong>Query de búsqueda:</strong> <code style="background: #fff; padding: 2px 6px; border-radius: 3px;">${data.search_query}</code></p>
+                </div>
+
+                ${matches.length === 0 ? `
+                    <div style="background: #f8d7da; padding: 20px; border-radius: 8px; color: #721c24; text-align: center;">
+                        <h3>😔 No se encontraron productos similares</h3>
+                        <p>No se pudieron encontrar productos que coincidan con un score mínimo del 70%.</p>
+                        <p style="color: #666; font-size: 14px;">Puedes intentar buscar manualmente usando las opciones anteriores.</p>
+                    </div>
+                ` : `
+                    <div class="matches-container">
+                        <h3>🎯 Productos Encontrados (${matches.length})</h3>
+                        <div class="matches-grid" style="display: grid; gap: 15px; margin-top: 15px;">
+                            ${matches.map(match => `
+                                <div class="match-card" style="
+                                    display: flex;
+                                    gap: 15px;
+                                    padding: 15px;
+                                    background: white;
+                                    border: 2px solid ${match.match_score >= 90 ? '#28a745' : match.match_score >= 80 ? '#ffc107' : '#007bff'};
+                                    border-radius: 8px;
+                                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                                ">
+                                    ${match.image ? `
+                                        <img src="${match.image}" alt="${match.name}"
+                                            style="width: 120px; height: 120px; object-fit: contain; border-radius: 4px; background: #f8f9fa;">
+                                    ` : `
+                                        <div style="width: 120px; height: 120px; background: #f0f0f0; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 40px;">
+                                            📦
+                                        </div>
+                                    `}
+
+                                    <div style="flex: 1;">
+                                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                                            <div>
+                                                <strong style="color: #007bff; font-size: 16px;">${match.store}</strong>
+                                                <div style="margin-top: 5px;">
+                                                    <span style="
+                                                        background: ${match.match_score >= 90 ? '#28a745' : match.match_score >= 80 ? '#ffc107' : '#007bff'};
+                                                        color: ${match.match_score >= 80 ? '#000' : '#fff'};
+                                                        padding: 3px 10px;
+                                                        border-radius: 12px;
+                                                        font-size: 13px;
+                                                        font-weight: bold;
+                                                    ">
+                                                        ${match.match_score >= 90 ? '🏆' : match.match_score >= 80 ? '⭐' : '✓'} ${match.match_score}% similitud
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div style="text-align: right;">
+                                                <div style="font-size: 26px; font-weight: bold; color: #28a745;">
+                                                    ${match.price}€
+                                                </div>
+                                                ${match.price < original.price ? `
+                                                    <div style="color: #dc3545; font-weight: bold; font-size: 14px;">
+                                                        Ahorro: ${(original.price - match.price).toFixed(2)}€
+                                                    </div>
+                                                ` : ''}
+                                            </div>
+                                        </div>
+
+                                        <p style="color: #333; font-size: 14px; margin: 10px 0; line-height: 1.4;">
+                                            ${match.name}
+                                        </p>
+
+                                        ${match.match_metadata ? `
+                                            <div style="background: #f8f9fa; padding: 8px; border-radius: 4px; font-size: 12px; color: #666; margin: 10px 0;">
+                                                <strong>Matching:</strong> ${match.match_metadata.algorithm || 'composite'}
+                                            </div>
+                                        ` : ''}
+
+                                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                            <a href="${match.url}" target="_blank"
+                                                style="padding: 8px 16px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; font-size: 14px;">
+                                                🔗 Ver en ${match.store}
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 30px; text-align: center; padding: 20px; background: #e7f3ff; border-radius: 8px;">
+                        <p style="color: #004085; margin-bottom: 15px; font-size: 16px;">
+                            ✅ <strong>${matches.length} productos</strong> han sido añadidos automáticamente a tu grupo de comparación
+                        </p>
+                        <button onclick="crossSiteSearch.viewComparison(${groupId})"
+                            style="padding: 12px 30px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                            📊 Ver Comparación Completa
+                        </button>
+                    </div>
+                `}
+            </div>
+        `;
+
+        document.getElementById('searchResults').innerHTML = resultsHtml;
     }
 
     /**
@@ -266,9 +554,20 @@ class CrossSiteSearch {
 
         const modalHtml = `
             <div id="comparisonModal" class="modal" style="display: block;">
-                <div class="modal-content" style="max-width: 1000px;">
-                    <span class="close" onclick="document.getElementById('comparisonModal').remove()">&times;</span>
-                    <h2>📊 Comparación de Precios</h2>
+                <div class="modal-content" style="max-width: 1000px; position: relative;">
+                    <span class="close" onclick="crossSiteSearch.closeComparisonModal()" style="
+                        position: absolute;
+                        top: 15px;
+                        right: 20px;
+                        font-size: 32px;
+                        font-weight: bold;
+                        color: #999;
+                        cursor: pointer;
+                        transition: color 0.2s;
+                        line-height: 1;
+                        z-index: 1000;
+                    " onmouseover="this.style.color='#333'" onmouseout="this.style.color='#999'">&times;</span>
+                    <h2 style="padding-right: 40px;">📊 Comparación de Precios</h2>
 
                     ${stats.product_name ? `
                         <div class="stats-summary" style="background: #e7f3ff; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
@@ -368,7 +667,7 @@ class CrossSiteSearch {
                     </div>
 
                     <div style="margin-top: 20px; text-align: center;">
-                        <button onclick="document.getElementById('comparisonModal').remove()"
+                        <button onclick="crossSiteSearch.closeComparisonModal()"
                             style="padding: 10px 30px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
                             Cerrar
                         </button>

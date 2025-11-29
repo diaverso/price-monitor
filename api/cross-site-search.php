@@ -10,6 +10,7 @@ header('Access-Control-Allow-Methods: POST, GET');
 header('Access-Control-Allow-Headers: Content-Type');
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../services/AutoCrossSiteSearch.php';
 
 session_start();
 
@@ -345,6 +346,93 @@ try {
         echo json_encode([
             'success' => true,
             'categories' => $categories
+        ]);
+        exit;
+    }
+
+    // POST: Búsqueda automática con scraping
+    if ($method === 'POST' && $action === 'auto-search') {
+        $data = json_decode(file_get_contents('php://input'), true);
+        $urlId = $data['url_id'] ?? null;
+        $targetStores = $data['target_stores'] ?? null;
+        $autoAddToGroup = $data['auto_add_to_group'] ?? true;
+
+        if (!$urlId) {
+            throw new Exception('url_id es requerido');
+        }
+
+        // Verificar que el usuario tiene acceso a esta URL
+        $stmt = $db->prepare("
+            SELECT id, url, product_name, group_id
+            FROM monitored_urls
+            WHERE id = ? AND user_id = ?
+        ");
+        $stmt->execute([$urlId, $user_id]);
+        $monitoredUrl = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$monitoredUrl) {
+            throw new Exception('Producto no encontrado o sin acceso');
+        }
+
+        // Si no hay grupo, crear uno
+        $groupId = $monitoredUrl['group_id'];
+
+        if (!$groupId) {
+            // Extraer información del producto para crear grupo
+            $productInfo = extractProductInfo($monitoredUrl['product_name']);
+            $productInfo['name'] = $monitoredUrl['product_name'];
+
+            // Crear grupo
+            $stmt = $db->prepare("
+                INSERT INTO product_groups (name, brand, model, category)
+                VALUES (?, ?, ?, ?)
+            ");
+            $stmt->execute([
+                $productInfo['name'],
+                $productInfo['brand'],
+                $productInfo['model'],
+                $productInfo['category']
+            ]);
+            $groupId = $db->lastInsertId();
+
+            // Añadir producto original al grupo
+            $stmt = $db->prepare("
+                INSERT INTO product_group_items (group_id, monitored_url_id, is_primary, similarity_score)
+                VALUES (?, ?, TRUE, 100.00)
+            ");
+            $stmt->execute([$groupId, $urlId]);
+
+            // Actualizar group_id en monitored_urls
+            $stmt = $db->prepare("UPDATE monitored_urls SET group_id = ? WHERE id = ?");
+            $stmt->execute([$groupId, $urlId]);
+        }
+
+        // Ejecutar búsqueda automática
+        $autoSearch = new AutoCrossSiteSearch();
+
+        $result = $autoSearch->searchProduct(
+            $urlId,
+            $user_id,
+            $targetStores,
+            $autoAddToGroup ? $groupId : null
+        );
+
+        if ($result['success']) {
+            $result['group_id'] = $groupId;
+        }
+
+        echo json_encode($result);
+        exit;
+    }
+
+    // GET: Obtener tiendas disponibles para auto-search
+    if ($method === 'GET' && $action === 'available-stores') {
+        $autoSearch = new AutoCrossSiteSearch();
+        $stores = $autoSearch->getAvailableStores();
+
+        echo json_encode([
+            'success' => true,
+            'stores' => $stores
         ]);
         exit;
     }

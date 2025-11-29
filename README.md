@@ -45,9 +45,18 @@ Sistema completo de monitoreo automático de precios con soporte para 17 tiendas
 #### Sistema de Monitoreo
 - **17 scrapers especializados** con Ulixee Hero (anti-detección de bots)
 - **Extracción automática** de precios, imágenes, títulos y descuentos
+- **Scraping automático al añadir** URLs (extracción inmediata de datos del producto)
 - **Verificación automática** 3 veces al día (09:00, 14:00, 00:00 hora española)
 - **Historial de precios** con gráficos interactivos (Chart.js)
 - **Multi-usuario** con sistema completo de autenticación
+
+#### Agrupación Inteligente de Productos ⭐ NUEVO
+- **Agrupación automática** por similitud de nombres (algoritmo ponderado con detección de código de modelo)
+- **Agrupación manual** para productos que el sistema no detecta automáticamente
+- **Desagrupación flexible** (individual o de todo el grupo)
+- **Actualización en grupo** - Un solo clic actualiza todos los productos agrupados
+- **Progreso visual** - Muestra "Actualizando Amazon (1/2)..." en tiempo real
+- **Comparación de precios** entre tiendas del mismo producto
 
 #### Notificaciones Inteligentes Multi-Canal
 - **Email** (SMTP)
@@ -132,6 +141,29 @@ Acceso: `http://localhost:8080`
 5. Configura tus métodos de notificación preferidos
 6. El sistema monitoriza automáticamente 3 veces al día
 
+#### Uso de Agrupación de Productos
+
+**Agrupación Automática:**
+- El sistema agrupa automáticamente productos con nombres similares (>70% similitud)
+- Detecta códigos de modelo (ej: "LG 65QNED84A6C") para agrupar con alta precisión
+- Los productos agrupados se muestran con badge "+N tiendas"
+
+**Agrupación Manual:**
+1. En cualquier producto, haz clic en "🔗 Agrupar Manualmente"
+2. Selecciona los productos que deseas agrupar
+3. Haz clic en "Agrupar Seleccionados"
+4. Los productos se agruparán aunque no sean similares
+
+**Actualización de Grupos:**
+- Haz clic en "🔄 Actualizar Datos" en un producto agrupado
+- Se actualizan TODAS las tiendas del grupo automáticamente
+- Muestra progreso: "Actualizando Amazon (1/3)...", "Actualizando PcComponentes (2/3)..."
+- Resumen final: "✅ Todas las tiendas actualizadas correctamente (3/3)"
+
+**Desagrupación:**
+- "🔓 Desagrupar" - Quita solo ese producto del grupo
+- "🔓 Desagrupar Todos" - Separa todos los productos del grupo
+
 ### 📁 Estructura del Proyecto
 
 ```
@@ -144,6 +176,7 @@ price-monitor/
 │   ├── auth.php           # Autenticación
 │   ├── urls.php           # Gestión de URLs
 │   ├── scrape.php         # Router de scrapers
+│   ├── manual-grouping.php # Agrupación manual de productos
 │   └── history.php        # Historial de precios
 ├── scrapers/              # Scrapers Node.js
 │   └── hero_scraper.js    # Ulixee Hero (principal)
@@ -207,9 +240,18 @@ Complete automated price monitoring system with support for 17 Spanish and inter
 #### Monitoring System
 - **17 specialized scrapers** with Ulixee Hero (anti-bot detection)
 - **Automatic extraction** of prices, images, titles, and discounts
+- **Automatic scraping on add** - Immediate product data extraction when adding URLs
 - **Automatic verification** 3 times a day (09:00, 14:00, 00:00 Spanish time)
 - **Price history** with interactive charts (Chart.js)
 - **Multi-user** with complete authentication system
+
+#### Smart Product Grouping ⭐ NEW
+- **Automatic grouping** by name similarity (weighted algorithm with model code detection)
+- **Manual grouping** for products the system doesn't detect automatically
+- **Flexible ungrouping** (individual or entire group)
+- **Group update** - Single click updates all grouped products
+- **Visual progress** - Shows "Updating Amazon (1/2)..." in real-time
+- **Price comparison** between stores for the same product
 
 #### Smart Multi-Channel Notifications
 - **Email** (SMTP)
@@ -294,6 +336,29 @@ Access: `http://localhost:8080`
 5. Configure your preferred notification methods
 6. System monitors automatically 3 times a day
 
+#### Product Grouping Usage
+
+**Automatic Grouping:**
+- System automatically groups products with similar names (>70% similarity)
+- Detects model codes (e.g., "LG 65QNED84A6C") for high-precision grouping
+- Grouped products show "+N stores" badge
+
+**Manual Grouping:**
+1. On any product, click "🔗 Group Manually"
+2. Select products you want to group
+3. Click "Group Selected"
+4. Products will be grouped even if not similar
+
+**Group Update:**
+- Click "🔄 Update Data" on a grouped product
+- Updates ALL stores in the group automatically
+- Shows progress: "Updating Amazon (1/3)...", "Updating PcComponentes (2/3)..."
+- Final summary: "✅ All stores updated successfully (3/3)"
+
+**Ungrouping:**
+- "🔓 Ungroup" - Remove only that product from the group
+- "🔓 Ungroup All" - Separate all products in the group
+
 ### 📁 Project Structure
 
 ```
@@ -306,6 +371,7 @@ price-monitor/
 │   ├── auth.php           # Authentication
 │   ├── urls.php           # URL management
 │   ├── scrape.php         # Scraper router
+│   ├── manual-grouping.php # Manual product grouping
 │   └── history.php        # Price history
 ├── scrapers/              # Node.js Scrapers
 │   └── hero_scraper.js    # Ulixee Hero (main)

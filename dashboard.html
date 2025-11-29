@@ -63,6 +63,7 @@
             margin: 40px auto;
             padding: 0 20px;
             gap: 20px;
+            transition: all 0.3s ease;
         }
 
         .sidebar-ad {
@@ -70,11 +71,33 @@
             position: sticky;
             top: 20px;
             height: fit-content;
+            /* Oculto por defecto */
+            width: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* Cuando el modal está abierto, mostrar sidebar */
+        .main-layout.modal-open .sidebar-ad {
+            width: 300px;
+            opacity: 1;
+            flex: 0 0 300px;
         }
 
         .container {
             flex: 1;
             min-width: 0;
+            /* Centrado por defecto cuando sidebar está oculto */
+            margin: 0 auto;
+            max-width: 1200px;
+            transition: all 0.3s ease;
+        }
+
+        /* Cuando el modal está abierto, el container ocupa su espacio normal */
+        .main-layout.modal-open .container {
+            margin: 0;
+            max-width: none;
         }
 
         @media (max-width: 968px) {
@@ -377,7 +400,7 @@
             padding: 40px;
             color: #666;
         }
-/* Notificaciones Toast */        .toast-container {            position: fixed;            top: 80px;            right: 20px;            z-index: 10000;        }        .toast {            background: white;            padding: 16px 24px;            margin-bottom: 10px;            border-radius: 8px;            box-shadow: 0 4px 12px rgba(0,0,0,0.15);            min-width: 300px;            max-width: 500px;            display: flex;            align-items: center;            gap: 12px;            animation: slideIn 0.3s ease;            border-left: 4px solid #667eea;        }        .toast.success { border-left-color: #4CAF50; }        .toast.error { border-left-color: #f44336; }        .toast.info { border-left-color: #2196F3; }        .toast-icon { font-size: 24px; }        .toast-content { flex: 1; }        .toast-title {            font-weight: 600;            margin-bottom: 4px;            color: #333;        }        .toast-message {            font-size: 14px;            color: #666;        }        @keyframes slideIn {            from { transform: translateX(400px); opacity: 0; }            to { transform: translateX(0); opacity: 1; }        }        @keyframes slideOut {            from { transform: translateX(0); opacity: 1; }            to { transform: translateX(400px); opacity: 0; }        }
+/* Notificaciones Toast */        .toast-container {            position: fixed;            top: 80px;            right: 20px;            z-index: 10000;        }        .toast {            background: white;            padding: 16px 24px;            margin-bottom: 10px;            border-radius: 8px;            box-shadow: 0 4px 12px rgba(0,0,0,0.15);            min-width: 300px;            max-width: 500px;            display: flex;            align-items: center;            gap: 12px;            animation: slideIn 0.3s ease;            border-left: 4px solid #667eea;        }        .toast.success { border-left-color: #4CAF50; }        .toast.error { border-left-color: #f44336; }        .toast.info { border-left-color: #2196F3; }        .toast.warning { border-left-color: #FF9800; }        .toast-icon { font-size: 24px; }        .toast-content { flex: 1; }        .toast-title {            font-weight: 600;            margin-bottom: 4px;            color: #333;        }        .toast-message {            font-size: 14px;            color: #666;        }        @keyframes slideIn {            from { transform: translateX(400px); opacity: 0; }            to { transform: translateX(0); opacity: 1; }        }        @keyframes slideOut {            from { transform: translateX(0); opacity: 1; }            to { transform: translateX(400px); opacity: 0; }        }
     </style>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4403585481892342"
      crossorigin="anonymous"></script>
