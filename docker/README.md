@@ -342,6 +342,34 @@ docker-compose down
 docker-compose up -d
 ```
 
+#### ⚠️ Persistencia de Datos
+
+**Los datos de la base de datos se mantienen entre actualizaciones:**
+
+- ✅ Los volúmenes Docker (`mysql-data`, `logs-data`) **NO se eliminan** con `docker-compose down`
+- ✅ Usuarios, URLs monitorizadas, historial de precios → **persisten automáticamente**
+- ✅ Solo se actualiza el código de la aplicación, no los datos
+
+**Para eliminar datos (reset completo):**
+
+```bash
+# ⚠️ CUIDADO: Esto elimina TODA la base de datos
+docker-compose down -v  # El flag -v elimina volúmenes
+
+# O eliminar volúmenes específicos
+docker volume rm docker_mysql-data docker_logs-data
+```
+
+**Backup antes de actualizar (recomendado):**
+
+```bash
+# Exportar base de datos
+docker-compose exec web mysqldump -u price_monitor_user -pchange_this_password price_monitor > backup_$(date +%Y%m%d).sql
+
+# Restaurar si es necesario
+docker-compose exec -T web mysql -u price_monitor_user -pchange_this_password price_monitor < backup_20231225.sql
+```
+
 ---
 
 ### 📊 Variables de Entorno (.env)
@@ -774,6 +802,34 @@ docker pull yourusername/price-monitor:latest
 # Restart with new image
 docker-compose down
 docker-compose up -d
+```
+
+#### ⚠️ Data Persistence
+
+**Database data is preserved between updates:**
+
+- ✅ Docker volumes (`mysql-data`, `logs-data`) are **NOT deleted** with `docker-compose down`
+- ✅ Users, monitored URLs, price history → **persist automatically**
+- ✅ Only application code is updated, not data
+
+**To delete data (complete reset):**
+
+```bash
+# ⚠️ WARNING: This deletes ALL database data
+docker-compose down -v  # The -v flag removes volumes
+
+# Or remove specific volumes
+docker volume rm docker_mysql-data docker_logs-data
+```
+
+**Backup before updating (recommended):**
+
+```bash
+# Export database
+docker-compose exec web mysqldump -u price_monitor_user -pchange_this_password price_monitor > backup_$(date +%Y%m%d).sql
+
+# Restore if needed
+docker-compose exec -T web mysql -u price_monitor_user -pchange_this_password price_monitor < backup_20231225.sql
 ```
 
 ---
