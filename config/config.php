@@ -19,8 +19,25 @@ class Config {
         self::$config = [];
 
         // Primero cargar variables de entorno del sistema (Docker, etc.)
+        // Usar getenv() para obtener variables de entorno reales
+        $envVars = [
+            'MYSQL_DATABASE', 'MYSQL_USER', 'MYSQL_PASSWORD', 'MYSQL_ROOT_PASSWORD',
+            'DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASS', 'DB_PORT', 'DB_CHARSET',
+            'APP_ENV', 'TZ'
+        ];
+
+        foreach ($envVars as $var) {
+            $value = getenv($var);
+            if ($value !== false) {
+                self::$config[$var] = $value;
+            }
+        }
+
+        // También cargar de $_SERVER (fallback)
         foreach ($_SERVER as $key => $value) {
-            self::$config[$key] = $value;
+            if (!isset(self::$config[$key])) {
+                self::$config[$key] = $value;
+            }
         }
 
         $envFile = __DIR__ . '/../.env';
