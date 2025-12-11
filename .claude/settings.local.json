@@ -16,7 +16,8 @@
       "Bash(wsl find:*)",
       "Bash(wsl grep:*)",
       "Bash(wsl sh:*)",
-      "Bash(docker exec:*)"
+      "Bash(docker exec:*)",
+      "Bash(wsl docker:*)"
     ],
     "deny": [],
     "ask": []
