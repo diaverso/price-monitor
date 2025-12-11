@@ -5,48 +5,48 @@
  */
 
 class Config {
-    private static  = null;
+    private static $config = null;
 
     /**
      * Cargar configuración desde archivo .env y variables de entorno
      */
     public static function load() {
-        if (self:: !== null) {
+        if (self::$config !== null) {
             return;
         }
 
         // Inicializar array de configuración
-        self:: = [];
+        self::$config = [];
 
         // Primero cargar variables de entorno del sistema (Docker, etc.)
-        foreach ( as  => ) {
-            self::[] = ;
+        foreach ($_SERVER as $key => $value) {
+            self::$config[$key] = $value;
         }
 
-         = __DIR__ . '/../.env';
+        $envFile = __DIR__ . '/../.env';
 
         // Si existe archivo .env, leerlo (sobrescribe vars de entorno)
-        if (file_exists()) {
+        if (file_exists($envFile)) {
             // Leer archivo .env
-             = file(, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
-            foreach ( as ) {
+            foreach ($lines as $line) {
                 // Ignorar comentarios
-                if (strpos(trim(), '#') === 0) {
+                if (strpos(trim($line), '#') === 0) {
                     continue;
                 }
 
                 // Parsear línea
-                if (strpos(, '=') !== false) {
-                    list(, ) = explode('=', , 2);
-                     = trim();
-                     = trim();
+                if (strpos($line, '=') !== false) {
+                    list($key, $value) = explode('=', $line, 2);
+                    $key = trim($key);
+                    $value = trim($value);
 
                     // Guardar en array de configuración
-                    self::[] = ;
+                    self::$config[$key] = $value;
 
                     // También establecer como variable de entorno
-                    putenv("=");
+                    putenv("$key=$value");
                 }
             }
         }
@@ -55,9 +55,9 @@ class Config {
     /**
      * Obtener valor de configuración
      */
-    public static function get(,  = null) {
+    public static function get($key, $default = null) {
         self::load();
-        return isset(self::[]) ? self::[] : ;
+        return isset(self::$config[$key]) ? self::$config[$key] : $default;
     }
 
     /**
