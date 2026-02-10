@@ -49,7 +49,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # Node.js v18.19.1 y npm desde repos de Ubuntu 24.04
     nodejs \
     npm \
-    # Dependencias de Chrome
+    # Dependencias de Chrome y Firefox (Camoufox/Playwright)
     libglib2.0-0 \
     libnspr4 \
     libnss3 \
@@ -73,11 +73,52 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-liberation \
     libappindicator3-1 \
     xdg-utils \
+    # Dependencias adicionales para Firefox/Camoufox
+    libgtk-3-0 \
+    libdbus-glib-1-2 \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
 # Instalar Selenium para Python
 RUN pip3 install --no-cache-dir selenium --break-system-packages
+
+# Instalar dependencias Python avanzadas (Scrapling, Crawlee, Camoufox)
+COPY requirements.txt /tmp/requirements.txt
+RUN pip3 install --no-cache-dir -r /tmp/requirements.txt --break-system-packages \
+    && rm /tmp/requirements.txt
+
+# Instalar navegadores para Scrapling
+RUN python3 -m scrapling install 2>&1 || true
+
+# Instalar navegadores para Playwright/Crawlee (Chromium + Firefox)
+RUN python3 -m playwright install --with-deps chromium firefox 2>&1 || true
+
+# Instalar navegador Camoufox (Firefox parcheado con anti-detección C++)
+# Forzar descarga ejecutando un scrape de prueba
+RUN timeout 120 python3 -c "from camoufox.sync_api import Camoufox; import time; browser = Camoufox(headless=True); page = browser.new_page(); page.goto('about:blank'); time.sleep(1); browser.close()" 2>&1 || true
+
+# Copiar navegadores de root a www-data con permisos correctos
+RUN mkdir -p /var/www/.cache \
+    && cp -r /root/.cache/ms-playwright /var/www/.cache/ 2>/dev/null || true \
+    && cp -r /root/.cache/camoufox /var/www/.cache/ 2>/dev/null || true \
+    && chown -R www-data:www-data /var/www/.cache \
+    && chmod -R 755 /var/www/.cache
+
+# Crear archivo glxtest dummy para Camoufox (evita errores en Docker headless)
+RUN if [ -d /var/www/.cache/camoufox ]; then \
+        echo '#!/bin/bash' > /var/www/.cache/camoufox/glxtest && \
+        echo 'exit 0' >> /var/www/.cache/camoufox/glxtest && \
+        chmod +x /var/www/.cache/camoufox/glxtest; \
+    fi
+
+# Crear wrapper para crashpad_handler de Playwright
+RUN if [ -f /var/www/.cache/ms-playwright/chromium-*/chrome-linux/chrome_crashpad_handler ]; then \
+        cd /var/www/.cache/ms-playwright/chromium-*/chrome-linux && \
+        mv chrome_crashpad_handler chrome_crashpad_handler.real && \
+        echo '#!/bin/bash' > chrome_crashpad_handler && \
+        echo 'exec $(dirname $0)/chrome_crashpad_handler.real --database=/tmp "$@"' >> chrome_crashpad_handler && \
+        chmod +x chrome_crashpad_handler; \
+    fi
 
 # Instalar Google Chrome for Testing 141.0.7390.122
 RUN CHROME_VERSION="141.0.7390.122" \

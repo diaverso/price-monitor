@@ -203,9 +203,36 @@ class ScraperService {
                     $result = $scraper->extractProductInfo();
                 }
             }
+            elseif (FnacScraper::isFnacURL($url)) {
+                // Paso 1: FnacScraper cURL (más rápido)
+                error_log("[ScraperService] Fnac: Intentando FnacScraper con cURL...");
+                $scraper = new FnacScraper($urlId, $url);
+                $result = $scraper->extractProductInfo();
+
+                // Paso 2: AdvancedScraper con camoufox (Firefox anti-detect, funciona para Fnac)
+                if (!$result['success']) {
+                    error_log("[ScraperService] Fnac cURL falló, intentando Camoufox (Firefox anti-detect)...");
+                    $scraper = new AdvancedScraper($urlId, $url, 'camoufox');
+                    $result = $scraper->extractProductInfo();
+                }
+
+                // Paso 3: Hero (Node.js, fallback final con extractFnac())
+                if (!$result['success']) {
+                    error_log("[ScraperService] Fnac Camoufox falló, intentando Hero...");
+                    $scraper = new HeroScraper($urlId, $url);
+                    $result = $scraper->extractProductInfo();
+                }
+            }
             else {
+                // Tienda desconocida: scraper genérico + fallback avanzado
                 error_log("[ScraperService] Tienda desconocida: Usando scraper genérico");
                 $result = PriceScraper::extractProductInfo($url);
+
+                if (!$result || !$result['success']) {
+                    error_log("[ScraperService] Scraper genérico falló, intentando AdvancedScraper...");
+                    $scraper = new AdvancedScraper($urlId, $url);
+                    $result = $scraper->extractProductInfo();
+                }
             }
 
             return $result;

@@ -19,6 +19,8 @@ Thumbs.db
 *~
 *.swp
 *.swo
+*.bak
+*:Zone.Identifier
 
 # IDE
 .vscode/

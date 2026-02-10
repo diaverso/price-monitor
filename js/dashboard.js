@@ -438,6 +438,7 @@ function getStoreName(url) {
         if (hostname.includes('coolmod')) return '🎮 Coolmod';
         if (hostname.includes('zalando')) return '👕 Zalando';
         if (hostname.includes('mercadona')) return '🛍️ Mercadona';
+        if (hostname.includes('fnac')) return '📚 Fnac';
 
         return '🌐 ' + hostname.replace('www.', '');
     } catch (e) {

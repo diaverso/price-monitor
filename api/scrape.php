@@ -23,6 +23,8 @@ require_once '../services/MangoOutletScraper.php';
 require_once '../services/MichaelKorsScraper.php';
 require_once '../services/MangoScraper.php';
 require_once '../services/IkeaScraper.php';
+require_once '../services/FnacScraper.php';
+require_once '../services/AdvancedScraper.php';
 require_once '../services/SeleniumScraper.php';
 require_once '../services/HeroScraper.php';
 require_once '../services/PriceScraper.php';
@@ -244,6 +246,26 @@ if ($method === 'POST') {
             if (!$result["success"]) {
                 error_log("IKEA Hero falló, intentando Selenium");
                 $scraper = new SeleniumScraper($urlId, $url, false);
+                $result = $scraper->extractProductInfo();
+            }
+        }
+        elseif (FnacScraper::isFnacURL($url)) {
+            // Paso 1: FnacScraper cURL (más rápido)
+            error_log("Fnac: Intentando FnacScraper con cURL...");
+            $scraper = new FnacScraper($urlId, $url);
+            $result = $scraper->extractProductInfo();
+
+            // Paso 2: AdvancedScraper con camoufox (Firefox anti-detect, funciona para Fnac)
+            if (!$result['success']) {
+                error_log("Fnac cURL falló, intentando Camoufox (Firefox anti-detect)...");
+                $scraper = new AdvancedScraper($urlId, $url, 'camoufox');
+                $result = $scraper->extractProductInfo();
+            }
+
+            // Paso 3: Hero (Node.js, fallback final con extractFnac())
+            if (!$result['success']) {
+                error_log("Fnac Camoufox falló, intentando Hero...");
+                $scraper = new HeroScraper($urlId, $url);
                 $result = $scraper->extractProductInfo();
             }
         }

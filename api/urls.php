@@ -19,6 +19,8 @@ require_once '../services/MangoOutletScraper.php';
 require_once '../services/MichaelKorsScraper.php';
 require_once '../services/MangoScraper.php';
 require_once '../services/IkeaScraper.php';
+require_once '../services/FnacScraper.php';
+require_once '../services/AdvancedScraper.php';
 require_once '../services/SeleniumScraper.php';
 require_once '../services/HeroScraper.php';
 require_once '../services/PriceScraper.php';

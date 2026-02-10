@@ -40,6 +40,7 @@ class HeroScraper {
         if (url.includes('michaelkors.es')) return 'michaelkors';
         if (url.includes('shop.mango.com')) return 'mango';
         if (url.includes('ikea.com')) return 'ikea';
+        if (url.includes('fnac.es')) return 'fnac';
         return 'unknown';
     }
 
@@ -171,6 +172,8 @@ class HeroScraper {
                 await this.extractMango();
             } else if (this.result.store === 'ikea') {
                 await this.extractIkea();
+            } else if (this.result.store === 'fnac') {
+                await this.extractFnac();
             } else {
                 this.result.error = 'Tienda no soportada';
                 return this.result;
@@ -1798,6 +1801,181 @@ class HeroScraper {
         }
     }
 
+
+    async extractFnac() {
+        console.error('🛍️  Extrayendo datos de Fnac...');
+
+        try {
+            // Esperar más tiempo para que Fnac cargue completamente
+            await this.hero.waitForMillis(8000);
+
+            // Simular scroll para activar lazy loading
+            await this.hero.interact({ scroll: [0, 300] });
+            await this.hero.waitForMillis(2000);
+            await this.hero.interact({ scroll: [0, 600] });
+            await this.hero.waitForMillis(1500);
+            await this.hero.interact({ scroll: [0, 0] });
+
+            await this.hero.waitForPaintingStable();
+            await this.hero.waitForMillis(3000);
+
+            // Debug: Ver HTML de la página
+            const pageTitle = await this.hero.document.title;
+            const bodyHTML = await this.hero.document.body.innerHTML;
+            console.error(`📄 Título de página: "${pageTitle}"`);
+            console.error(`📄 Longitud HTML: ${bodyHTML.length} caracteres`);
+
+            // Buscar si hay un mensaje de bloqueo o captcha
+            if (bodyHTML.includes('captcha') || bodyHTML.includes('blocked') || bodyHTML.includes('Access Denied')) {
+                console.error('⚠️  Página muestra captcha o bloqueo');
+            }
+
+            // Debug: Ver qué h1 hay
+            const allH1s = await this.hero.document.querySelectorAll('h1');
+            const h1Count = await allH1s.length;
+            console.error(`🔍 Encontrados ${h1Count} elementos h1`);
+
+            // Nombre del producto - h1.f-productHeader__heading
+            try {
+                const nameElem = await this.hero.document.querySelector('h1.f-productHeader__heading');
+                if (nameElem) {
+                    const nameText = await nameElem.textContent;
+                    if (nameText && nameText.trim()) {
+                        this.result.title = nameText.trim();
+                        console.error('✓ Nombre encontrado:', this.result.title.substring(0, 50));
+                    }
+                } else {
+                    // Intentar con cualquier h1
+                    if (h1Count > 0) {
+                        for (let i = 0; i < h1Count; i++) {
+                            const text = await allH1s[i].textContent;
+                            const className = await allH1s[i].className;
+                            console.error(`  h1[${i}]: class="${className}", text="${text.substring(0, 50)}"`);
+                            // Si el h1 parece ser un título de producto (largo y descriptivo)
+                            if (text && text.trim().length > 10 && !className.includes('nav')) {
+                                this.result.title = text.trim();
+                                console.error('✓ Nombre encontrado (alternativo)');
+                                break;
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('⚠️  No se pudo extraer nombre:', e.message);
+            }
+
+            // Imagen del producto - img.f-productMedias__viewItem--main
+            try {
+                let imgElem = await this.hero.document.querySelector('img.f-productMedias__viewItem--main');
+                if (imgElem) {
+                    let src = await imgElem.src;
+
+                    // Si la URL no tiene protocolo, agregar https:
+                    if (src && !src.startsWith('http')) {
+                        src = 'https:' + src;
+                    }
+
+                    if (src) {
+                        this.result.image = src;
+                        console.error('✓ Imagen encontrada');
+                    }
+                } else {
+                    // Intentar alternativas: imágenes de producto
+                    console.error('🔍 Buscando imagen alternativa...');
+                    const productImgs = await this.hero.document.querySelectorAll('img[class*="product"], img[itemprop="image"]');
+                    const imgCount = await productImgs.length;
+                    console.error(`  Encontradas ${imgCount} imágenes de producto`);
+                    if (imgCount > 0) {
+                        let src = await productImgs[0].src;
+                        if (src && !src.startsWith('http')) {
+                            src = 'https:' + src;
+                        }
+                        if (src && !src.includes('placeholder')) {
+                            this.result.image = src;
+                            console.error('✓ Imagen encontrada (alternativa)');
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('⚠️  No se pudo extraer imagen:', e.message);
+            }
+
+            // Precio actual - span.f-faPriceBox__price.userPrice
+            try {
+                let priceElem = await this.hero.document.querySelector('span.f-faPriceBox__price.userPrice');
+                if (priceElem) {
+                    const priceText = await priceElem.textContent;
+                    if (priceText) {
+                        this.result.price = this.parsePrice(priceText);
+                        console.error('✓ Precio actual encontrado:', this.result.price);
+                    }
+                } else {
+                    // Buscar precios alternativos
+                    console.error('🔍 Buscando precio alternativo...');
+                    const priceElems = await this.hero.document.querySelectorAll('[class*="price"], [itemprop="price"]');
+                    const priceCount = await priceElems.length;
+                    console.error(`  Encontrados ${priceCount} elementos con precio`);
+                    for (let i = 0; i < Math.min(5, priceCount); i++) {
+                        const text = await priceElems[i].textContent;
+                        const className = await priceElems[i].className;
+                        if (text && text.trim()) {
+                            console.error(`  [${i}]: "${text.trim()}" (class: ${className.substring(0, 30)})`);
+                            const price = this.parsePrice(text);
+                            if (price && price > 0 && !this.result.price) {
+                                this.result.price = price;
+                                console.error('✓ Precio encontrado (alternativo):', price);
+                                break;
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('⚠️  No se pudo extraer precio:', e.message);
+            }
+
+            // Precio original (tachado) - strong.f-faPriceBox__price--striked
+            try {
+                const originalPriceElem = await this.hero.document.querySelector('strong.f-faPriceBox__price--striked');
+                if (originalPriceElem) {
+                    const priceText = await originalPriceElem.textContent;
+                    if (priceText) {
+                        this.result.original_price = this.parsePrice(priceText);
+                        console.error('✓ Precio original encontrado');
+                    }
+                }
+            } catch (e) {
+                console.error('ℹ️  No hay precio original');
+            }
+
+            // Descuento - span.f-faPriceBox__stimuliOpcLabel
+            try {
+                const discountElem = await this.hero.document.querySelector('span.f-faPriceBox__stimuliOpcLabel');
+                if (discountElem) {
+                    const discountText = await discountElem.textContent;
+                    if (discountText) {
+                        this.result.discount = this.parseDiscount(discountText);
+                        console.error('✓ Descuento encontrado');
+                    }
+                }
+            } catch (e) {
+                console.error('ℹ️  No hay descuento');
+            }
+
+            // Calcular descuento si tenemos ambos precios
+            if (this.result.original_price && this.result.price && !this.result.discount) {
+                const discountPercent = Math.round(
+                    ((this.result.original_price - this.result.price) / this.result.original_price) * 100
+                );
+                if (discountPercent > 0) {
+                    this.result.discount = discountPercent;
+                    console.error('✓ Descuento calculado');
+                }
+            }
+
+        } catch (error) {
+            console.error('✗ Error extrayendo Fnac:', error.message);
+        }
+    }
 
 }
 
